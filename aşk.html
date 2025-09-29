@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>💖 Günaydın İlayda – Pembe Sürpriz</title>
+  <meta name="description" content="Pembe aurora, kalp yağmuru ve havai fişekli büyülü sürpriz" />
+  <style>
+    /* ===== THEME (Pink, dreamy) ===== */
+    :root{
+      --pink-1:#ff4fa0; --pink-2:#ff79c6; --pink-3:#ffc0e6; --pink-4:#ff94d6; --pink-5:#ff2e9c;
+      --ink:#fff; --muted:#ffe9f7; --bg-deep:#120016;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0}
+    body{
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      color:var(--ink);
+      overflow:hidden;
+      background:
+        radial-gradient(1200px 800px at 20% 10%, rgba(255,134,197,.18), transparent 60%),
+        radial-gradient(900px 600px at 80% 20%, rgba(255,169,221,.22), transparent 60%),
+        linear-gradient(130deg, #2a003b 0%, #3a003a 35%, #25002a 100%);
+      animation: hue 18s ease-in-out infinite alternate;
+    }
+    @keyframes hue{0%{filter:hue-rotate(0)}100%{filter:hue-rotate(-12deg)}}
+
+    /* Soft aurora ribbons */
+    .aurora{position:fixed; inset:-25vmax; pointer-events:none; z-index:0; filter: blur(60px) saturate(130%); opacity:.65}
+    .aurora::before,.aurora::after{content:""; position:absolute; inset:0;
+      background: conic-gradient(from 180deg at 50% 50%, rgba(255,121,198,.25), rgba(255,46,156,.35), rgba(255,192,230,.22), rgba(255,121,198,.25));
+      mix-blend-mode:screen; animation: aur 26s ease-in-out infinite alternate}
+    .aurora::after{ animation-duration: 34s; animation-direction: alternate-reverse; opacity:.75 }
+    @keyframes aur{0%{transform: translate(-8%, -6%) rotate(0) scale(1.05)}100%{transform: translate(8%, 6%) rotate(12deg) scale(1.1)}}
+
+    /* Foreground container */
+    .container{position:relative; height:100%; width:100%; display:grid; place-items:center; padding:24px; z-index:3}
+
+    .card{
+      position:relative; width:min(900px,96vw); min-height:480px; border-radius:34px; padding:44px 38px; text-align:center;
+      background:linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.06));
+      backdrop-filter: blur(16px);
+      box-shadow:0 30px 100px rgba(255,46,156,.38), inset 0 0 0 1px rgba(255,255,255,.16);
+      overflow:hidden;
+    }
+
+    /* Title – wave letters, subtle glow */
+    .title{display:inline-block; font-weight:900; letter-spacing:.4px; margin:0 0 10px}
+    .title span{display:inline-block; font-size:clamp(34px,6vw,64px); text-shadow:0 6px 26px rgba(255,46,156,.45)}
+    .subtitle{font-size:clamp(15px,2.4vw,20px); color:var(--muted); margin:6px 0 24px}
+
+    /* CTA */
+    .btn{display:inline-grid; place-items:center; gap:6px; cursor:pointer; border:0; padding:16px 28px; border-radius:20px;
+      background: radial-gradient(120% 120% at 20% 20%, var(--pink-2), var(--pink-5)); color:white; font-size:20px; font-weight:800;
+      box-shadow:0 14px 42px rgba(255,46,156,.55), inset 0 0 18px rgba(255,255,255,.18);
+      transition: transform .18s ease, box-shadow .18s ease, filter .18s ease}
+    .btn:hover{transform:translateY(-2px) scale(1.01); box-shadow:0 22px 64px rgba(255,46,156,.65)}
+    .btn:active{transform:translateY(0) scale(.98)}
+
+    .section{margin-top:14px}
+    .hidden{opacity:0; transform:translateY(22px) scale(.98); filter: blur(10px); transition: all 1.05s cubic-bezier(.2,.65,.2,1)}
+    .revealed .hidden{opacity:1; transform:none; filter:none}
+
+    .message{margin-top:12px; line-height:1.45; font-size:clamp(21px,3vw,27px); white-space:pre-line}
+
+    /* Layers */
+    canvas{position:fixed; inset:0; pointer-events:none}
+    #sparkles{z-index:1; mix-blend-mode:screen}
+    #confetti{z-index:2}
+
+    /* Floating hearts (DOM) */
+    .hearts-layer{position:absolute; inset:0; pointer-events:none; overflow:hidden; z-index:2}
+    .heart{position:absolute; bottom:-40px; font-size:22px; opacity:.95; filter: drop-shadow(0 6px 10px rgba(255,46,156,.45));
+      animation: floatUp linear forwards}
+    @keyframes floatUp{ to{ transform: translateY(-125vh) rotate(18deg); opacity:0 } }
+
+    /* Note */
+    .note{position:absolute; right:16px; bottom:12px; font-size:12px; color:rgba(255,255,255,.7)}
+
+    @media (prefers-reduced-motion: reduce){ .aurora, .heart, #sparkles, #confetti { animation: none !important; transition:none !important } }
+  </style>
+</head>
+<body>
+  <!-- BACKGROUND MAGIC -->
+  <div class="aurora"></div>
+  <canvas id="sparkles"></canvas>
+  <canvas id="confetti"></canvas>
+
+  <div class="container">
+    <div class="card" id="card">
+      <div class="hearts-layer" id="hearts"></div>
+
+      <h1 class="title" id="title"></h1>
+      <p class="subtitle">Kahveni yudumlarken küçük bir pembe büyü. ✨</p>
+
+      <div class="section">
+        <button class="btn" id="revealBtn">Sürprizi Başlat 💖</button>
+      </div>
+
+      <div class="section hidden" id="hidden">
+        <div class="message" id="msg"></div>
+      </div>
+
+      <div class="note">Tıkla / ekrana dokun – kalpler, kıvılcımlar, havai fişek 💫</div>
+    </div>
+  </div>
+
+  <script>
+    // ===== SETTINGS =====
+    const SETTINGS = {
+      name: "Günaydın İlayda",
+      message: "Bugün güzel bir gün.\nKahveni yudumlarken gülümse;\nçünkü seni düşününce dünya pembeye dönüyor. 💗\nİyi ki varsın.",
+      heartAmbientRateMs: 340,
+      fireworksEveryMs: 2400,
+      sparkleDensity: 0.95 // 0..1
+    };
+
+    // ===== TITLE LETTER WAVE =====
+    const titleEl = document.getElementById('title');
+    function setWaveTitle(text){
+      titleEl.innerHTML = '';
+      [...text].forEach((ch,i)=>{
+        const s = document.createElement('span');
+        s.textContent = ch;
+        s.style.animation = `wave 1.15s ${i*45}ms ease-in-out infinite`;
+        s.style.display = 'inline-block';
+        s.style.transformOrigin = '50% 80%';
+        s.style.backgroundImage = 'linear-gradient(180deg, #fff, #ffe2f3)';
+        s.style.webkitBackgroundClip = s.style.backgroundClip = 'text';
+        s.style.color = 'transparent';
+        s.style.textShadow = '0 10px 26px rgba(255,46,156,.46)';
+        titleEl.appendChild(s);
+      });
+    }
+    const style = document.createElement('style');
+    style.textContent = `@keyframes wave{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-6px) rotate(1deg)}}`;
+    document.head.appendChild(style);
+
+    // ===== HEARTS (DOM floating) =====
+    const heartsLayer = document.getElementById('hearts');
+    const HEARTS = ['💖','💗','💓','💘','💞','💕','💟'];
+    function spawnHeart(){
+      const h = document.createElement('span');
+      h.className = 'heart';
+      h.textContent = HEARTS[Math.floor(Math.random()*HEARTS.length)];
+      h.style.left = Math.random()*100 + 'vw';
+      const size = 18 + Math.random()*28; h.style.fontSize = size + 'px';
+      const dur = 8 + Math.random()*7; h.style.animationDuration = dur + 's';
+      heartsLayer.appendChild(h);
+      setTimeout(()=> h.remove(), (dur*1000)+100);
+    }
+    let heartTimer = setInterval(spawnHeart, SETTINGS.heartAmbientRateMs);
+
+    // ===== SPARKLES BACKGROUND (Canvas) =====
+    const sparkCanvas = document.getElementById('sparkles');
+    const scx = sparkCanvas.getContext('2d');
+    let sw = sparkCanvas.width = innerWidth, sh = sparkCanvas.height = innerHeight;
+    let sparks = [];
+    function initSparks(){
+      const count = Math.floor((sw*sh)/12000 * SETTINGS.sparkleDensity);
+      sparks = Array.from({length: count}, ()=> ({
+        x: Math.random()*sw,
+        y: Math.random()*sh,
+        r: Math.random()*1.7 + .5,
+        a: Math.random()*Math.PI*2,
+        s: .2 + Math.random()*0.6,
+        tw: Math.random()*2000
+      }));
+    }
+    function drawSparks(t){
+      scx.clearRect(0,0,sw,sh);
+      for(const p of sparks){
+        p.x += Math.cos(p.a)*p.s; p.y += Math.sin(p.a)*p.s*0.4;
+        if(p.x<0) p.x=sw; if(p.x>sw) p.x=0; if(p.y<0) p.y=sh; if(p.y>sh) p.y=0;
+        const tw = (Math.sin((t+p.tw)/500)+1)/2; // 0..1
+        scx.globalAlpha = 0.35 + tw*0.65;
+        scx.beginPath(); scx.arc(p.x,p.y,p.r,0,Math.PI*2);
+        const grad = scx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r*3);
+        grad.addColorStop(0,'rgba(255,255,255,.95)');
+        grad.addColorStop(1,'rgba(255,46,156,.2)');
+        scx.fillStyle = grad; scx.fill();
+      }
+      scx.globalAlpha=1;
+    }
+
+    // ===== CONFETTI & FIREWORKS (Canvas) =====
+    const confCanvas = document.getElementById('confetti');
+    const ccx = confCanvas.getContext('2d');
+    confCanvas.width = sw; confCanvas.height = sh;
+    let shards = [];
+    function burst(x,y, power=9, n=180){
+      for(let i=0;i<n;i++){
+        const ang = Math.random()*Math.PI*2; const sp = Math.random()*power + 2;
+        shards.push({x,y, vx: Math.cos(ang)*sp, vy: Math.sin(ang)*sp, life: 70+Math.random()*30, r: 2+Math.random()*3,
+          col: `hsl(${330 + Math.random()*30}, 90%, ${50+Math.random()*30}%)`});
+      }
+    }
+    function drawShards(){
+      ccx.clearRect(0,0,sw,sh);
+      for(const s of shards){
+        s.vy += 0.12; s.x += s.vx; s.y += s.vy; s.life -= 1;
+        ccx.globalAlpha = Math.max(0, s.life/100);
+        ccx.fillStyle = s.col;
+        ccx.beginPath(); ccx.arc(s.x,s.y,s.r,0,Math.PI*2); ccx.fill();
+      }
+      shards = shards.filter(s=> s.life>0 && s.y<sh+50);
+      ccx.globalAlpha = 1;
+    }
+
+    // ===== CURSOR HEART TRAIL =====
+    window.addEventListener('pointermove', e=>{
+      if(Math.random() < 0.5) return;
+      const h = document.createElement('span'); h.className='heart'; h.textContent='💖';
+      h.style.left = (e.clientX - 8) + 'px'; h.style.bottom = 'auto'; h.style.top = (e.clientY + 10) + 'px';
+      h.style.position='fixed'; h.style.animationDuration = '1.2s';
+      h.style.transform = 'translateY(-20px)';
+      document.body.appendChild(h); setTimeout(()=> h.remove(), 1200);
+    });
+
+    // ===== REVEAL FLOW =====
+    const revealBtn = document.getElementById('revealBtn');
+    const hidden = document.getElementById('hidden');
+    const msgEl = document.getElementById('msg');
+    let revealed = false;
+
+    function typeText(el, text, speed=34){
+      return new Promise(resolve=>{
+        el.textContent=''; let i=0; (function t(){
+          if(i<text.length){ el.textContent += text[i]; i++; setTimeout(t, text[i-1]==='\n'? 260 : speed); }
+          else resolve(); })();
+      });
+    }
+
+    async function reveal(){
+      if(revealed) return; revealed = true; revealBtn.style.display='none';
+      hidden.classList.remove('hidden');
+      // triple fireworks center + sides
+      burst(sw*0.5, sh*0.45, 11, 220);
+      setTimeout(()=> burst(sw*0.25, sh*0.4, 9, 160), 200);
+      setTimeout(()=> burst(sw*0.75, sh*0.5, 9, 160), 380);
+      await typeText(msgEl, SETTINGS.message);
+      // celebratory rain
+      for(let i=0;i<6;i++) setTimeout(()=> burst(Math.random()*sw, sh*0.35 + Math.random()*sh*0.2, 8, 140), 600 + i*240);
+    }
+    revealBtn.addEventListener('click', reveal);
+    document.addEventListener('touchstart', ()=>{ if(!revealed) reveal(); }, {passive:true});
+
+    // ===== AUTO FIREWORKS LOOP =====
+    let fwTimer = setInterval(()=>{ if(!revealed) return; burst(Math.random()*sw, Math.random()*sh*0.6 + 40, 7, 120); }, SETTINGS.fireworksEveryMs);
+
+    // ===== RESIZE =====
+    function onResize(){ sw = sparkCanvas.width = innerWidth; sh = sparkCanvas.height = innerHeight; confCanvas.width = sw; confCanvas.height = sh; initSparks(); }
+    addEventListener('resize', onResize);
+
+    // ===== RAF LOOP =====
+    let last=0; function raf(t){ last=t; drawSparks(t); drawShards(); requestAnimationFrame(raf); }
+
+    // ===== INIT =====
+    setWaveTitle(SETTINGS.name);
+    initSparks(); requestAnimationFrame(raf);
+    for(let i=0;i<12;i++) setTimeout(spawnHeart, i*180);
+  </script>
+</body>
+</html>
